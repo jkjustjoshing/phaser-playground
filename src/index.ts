@@ -13,13 +13,20 @@ const SIDES = {
 }
 
 const gameOptions = {
+  width: 730,
+  height: 1334,
   gravity: 4,
   bars: 4,
-  ballSpeed: 2,
+  ballSpeed: 5,
   jumpForce: 10
 }
 
 class playGame extends Phaser.Scene {
+  leftWalls: Phaser.Physics.Matter.Image[]
+  rightWalls: Phaser.Physics.Matter.Image[]
+  ball: Phaser.Physics.Matter.Image
+
+
   constructor () {
     super('PlayGame')
   }
@@ -36,7 +43,7 @@ class playGame extends Phaser.Scene {
       this.leftWalls.push(this.addWall(i, SIDES.LEFT))
       this.rightWalls.push(this.addWall(i, SIDES.RIGHT))
     }
-    this.ball = this.matter.add.image(game.config.width / 4, game.config.height / 2, 'ball')
+    this.ball = this.matter.add.image(gameOptions.width / 4, gameOptions.height / 2, 'ball')
     this.ball.setBody({ type: 'circle' })
     let randomWall = Phaser.Math.RND.pick(this.rightWalls)
     this.ball.setTint(randomWall.body.color)
@@ -46,8 +53,8 @@ class playGame extends Phaser.Scene {
 
   addWall(wallNumber, side) {
     let wallTexture = this.textures.get('wall')
-    let wallHeight = game.config.height / gameOptions.bars
-    let wallX = side * game.config.width + wallTexture.source[0].width * (side - 0.5)
+    let wallHeight = gameOptions.height / gameOptions.bars
+    let wallX = side * gameOptions.width + wallTexture.source[0].width * (side - 0.5)
     let wallY = wallHeight * wallNumber + wallHeight / 2
     let wall = this.matter.add.image(wallX, wallY, 'wall', null, {
       isStatic: true,
@@ -63,17 +70,17 @@ class playGame extends Phaser.Scene {
 
   update () {
     this.ball.setVelocity(this.ball.body.velocity.x > 0 ? gameOptions.ballSpeed : -gameOptions.ballSpeed, this.ball.body.velocity.y)
-    if (this.ball.y < 0 || this.ball.y > game.config.height) {
+    if (this.ball.y < 0 || this.ball.y > gameOptions.height) {
       this.scene.start('PlayGame')
     }
   }
 }
 
 
-const gameConfig = {
+const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: 730,
-  height: 1334,
+  width: gameOptions.width,
+  height: gameOptions.height,
   backgroundColor: 0x983303,
   scene: playGame,
   physics: {
@@ -97,7 +104,7 @@ const resize = () => {
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
   let windowRatio = windowWidth / windowHeight;
-  let gameRatio = game.config.width / game.config.height;
+  let gameRatio = gameOptions.width / gameOptions.height;
   if(windowRatio < gameRatio){
     canvas.style.width = windowWidth + "px";
     canvas.style.height = (windowWidth / gameRatio) + "px";
