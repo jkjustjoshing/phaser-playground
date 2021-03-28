@@ -23,7 +23,8 @@ const gameOptions = {
 
 class Bar extends Phaser.Scene {
   bars: Phaser.Physics.Matter.Image[]
-  ball: Phaser.Physics.Matter.Image
+  barkeep: Phaser.Physics.Matter.Image
+  space: Phaser.Input.Keyboard.Key
 
 
   constructor () {
@@ -40,11 +41,23 @@ class Bar extends Phaser.Scene {
     for (let i = 0; i < gameOptions.bars; ++i) {
       this.bars.push(this.addBar(i))
     }
-    this.ball = this.matter.add.image(gameOptions.width / 4, gameOptions.height / 2, 'ball')
-    this.ball.setBody({ type: 'circle' })
-    this.ball.setVelocity(0, 0)
+    this.barkeep = this.matter.add.image(gameOptions.width / 4, gameOptions.height / 2, 'ball')
+    this.barkeep.setBody({ type: 'circle' })
+    this.barkeep.setVelocity(0, 0)
     this.moveBall()
-    this.input.keyboard.on('keydown', this.action, this)
+
+    this.space = this.input.keyboard.addKey(32)
+    this.space.onUp = (e) => {
+      const duration = this.space.getDuration()
+
+      if (duration > 400) {
+        this.sendBeer()
+      }
+      this.space.reset()
+    }
+
+    this.input.keyboard.on('keydown', this.keydown, this)
+    this.input.keyboard.on('keyup', this.keyup, this)
   }
 
   addBar(wallNumber) {
@@ -65,16 +78,16 @@ class Bar extends Phaser.Scene {
     if (!direction) {
       position = 0
     } else if (direction === 'up') {
-      position = (this.ball.getData('position') - 1 + gameOptions.bars) % gameOptions.bars
+      position = (this.barkeep.getData('position') - 1 + gameOptions.bars) % gameOptions.bars
     } else if (direction === 'down') {
-      position = (this.ball.getData('position') + 1) % gameOptions.bars
+      position = (this.barkeep.getData('position') + 1) % gameOptions.bars
     }
 
-    this.ball.setData('position', position)
-    this.ball.setPosition(gameOptions.width * 0.9, this.bars[position].getRightCenter().y)
+    this.barkeep.setData('position', position)
+    this.barkeep.setPosition(gameOptions.width * 0.9, this.bars[position].getRightCenter().y)
   }
 
-  action (event: KeyboardEvent) {
+  keydown (event: KeyboardEvent) {
     if (event.key === 'ArrowUp') {
       this.moveBall('up')
     } else if (event.key === 'ArrowDown') {
@@ -82,9 +95,16 @@ class Bar extends Phaser.Scene {
     }
   }
 
+  keyup (event: KeyboardEvent) {
+  }
+
+  sendBeer () {
+    console.log('send beer')
+  }
+
   update () {
-    // this.ball.setVelocity(this.ball.body.velocity.x > 0 ? gameOptions.ballSpeed : -gameOptions.ballSpeed, this.ball.body.velocity.y)
-    // if (this.ball.y < 0 || this.ball.y > gameOptions.height) {
+    // this.barkeep.setVelocity(this.barkeep.body.velocity.x > 0 ? gameOptions.ballSpeed : -gameOptions.ballSpeed, this.barkeep.body.velocity.y)
+    // if (this.barkeep.y < 0 || this.barkeep.y > gameOptions.height) {
     //   this.scene.start('PlayGame')
     // }
   }
