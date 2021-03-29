@@ -22,7 +22,7 @@ const gameOptions = {
 }
 
 class Bar extends Phaser.Scene {
-  bars: Phaser.Physics.Matter.Image[]
+  bars: Phaser.Physics.Arcade.Image[]
   barkeep: Barkeep
   space: Phaser.Input.Keyboard.Key
 
@@ -47,7 +47,7 @@ class Bar extends Phaser.Scene {
     this.space.onUp = (e) => {
       const duration = this.space.getDuration()
 
-      if (duration > 400) {
+      if (duration > 100) {
         this.sendBeer()
       }
       this.space.reset()
@@ -62,9 +62,7 @@ class Bar extends Phaser.Scene {
     let wallHeight = gameOptions.height / (gameOptions.bars * 2 + 1)
     let wallX = gameOptions.width * 0.4
     let wallY = wallHeight * (wallNumber * 2 + 1.5)
-    let wall = this.matter.add.image(wallX, wallY, 'wall', null, {
-      isStatic: true
-    })
+    let wall = this.physics.add.image(wallX, wallY, 'wall')
     wall.displayHeight = wallHeight
     wall.displayWidth = gameOptions.width * 0.8
     return wall
@@ -82,28 +80,20 @@ class Bar extends Phaser.Scene {
   }
 
   sendBeer () {
-    console.log('send beer')
     this.barkeep.addBeer()
-  }
-
-  update () {
-    // this.barkeep.setVelocity(this.barkeep.body.velocity.x > 0 ? gameOptions.ballSpeed : -gameOptions.ballSpeed, this.barkeep.body.velocity.y)
-    // if (this.barkeep.y < 0 || this.barkeep.y > gameOptions.height) {
-    //   this.scene.start('PlayGame')
-    // }
   }
 }
 
-class Barkeep extends Phaser.Physics.Matter.Image {
+class Barkeep extends Phaser.Physics.Arcade.Image {
   positions: number[]
   position: number
 
   constructor (scene: Phaser.Scene, positions: number[]) {
-    super(scene.matter.world, gameOptions.width / 4, gameOptions.height / 2, 'ball')
+    super(scene, gameOptions.width / 4, gameOptions.height / 2, 'ball')
     this.positions = positions
 
-    this.setBody({ type: 'circle' })
-    this.setVelocity(0, 0)
+    // this.setBody({ type: 'circle' })
+    // this.setVelocity(0, 0)
 
     this.moveBall()
   }
@@ -125,16 +115,19 @@ class Barkeep extends Phaser.Physics.Matter.Image {
   addBeer () {
     const beer = new Beer(this.scene, this.positions[this.position])
     this.scene.add.existing(beer)
+    setTimeout(() => beer.send())
   }
 }
 
-class Beer extends Phaser.Physics.Matter.Image {
+class Beer extends Phaser.Physics.Arcade.Image {
 
   constructor (scene: Phaser.Scene, y: number) {
-    super(scene.matter.world, gameOptions.width * 0.8, y - 70, 'ball')
+    super(scene, gameOptions.width * 0.8, y - 70, 'ball')
+    scene.physics.world.enable(this)
+  }
 
-    this.setBody({ type: 'circle' })
-    this.setVelocity(-5, 0)
+  send () {
+    this.setVelocity(-100, 0)
   }
 
 }
@@ -147,12 +140,9 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   backgroundColor: 0x983303,
   scene: Bar,
   physics: {
-    default: "matter",
-    matter: {
-      gravity: {
-        x: 0,
-        y: 0
-      }
+    default: 'arcade',
+    arcade: {
+
     }
   }
 }
