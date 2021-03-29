@@ -83,6 +83,7 @@ class Bar extends Phaser.Scene {
 
   sendBeer () {
     console.log('send beer')
+    this.barkeep.addBeer()
   }
 
   update () {
@@ -120,6 +121,22 @@ class Barkeep extends Phaser.Physics.Matter.Image {
     this.position = position
     this.setPosition(gameOptions.width * 0.9, this.positions[position])
   }
+
+  addBeer () {
+    const beer = new Beer(this.scene, this.positions[this.position])
+    this.scene.add.existing(beer)
+  }
+}
+
+class Beer extends Phaser.Physics.Matter.Image {
+
+  constructor (scene: Phaser.Scene, y: number) {
+    super(scene.matter.world, gameOptions.width * 0.8, y - 70, 'ball')
+
+    this.setBody({ type: 'circle' })
+    this.setVelocity(-5, 0)
+  }
+
 }
 
 
