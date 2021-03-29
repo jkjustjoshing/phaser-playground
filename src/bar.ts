@@ -23,7 +23,7 @@ const gameOptions = {
 
 class Bar extends Phaser.Scene {
   bars: Phaser.Physics.Matter.Image[]
-  barkeep: Phaser.Physics.Matter.Image
+  barkeep: Barkeep
   space: Phaser.Input.Keyboard.Key
 
 
@@ -41,10 +41,7 @@ class Bar extends Phaser.Scene {
     for (let i = 0; i < gameOptions.bars; ++i) {
       this.bars.push(this.addBar(i))
     }
-    this.barkeep = this.matter.add.image(gameOptions.width / 4, gameOptions.height / 2, 'ball')
-    this.barkeep.setBody({ type: 'circle' })
-    this.barkeep.setVelocity(0, 0)
-    this.moveBall()
+    this.barkeep = this.add.existing(new Barkeep(this, this.bars.map(b => b.getRightCenter().y)))
 
     this.space = this.input.keyboard.addKey(32)
     this.space.onUp = (e) => {
@@ -73,25 +70,11 @@ class Bar extends Phaser.Scene {
     return wall
   }
 
-  moveBall(direction?: 'up' | 'down') {
-    let position: number
-    if (!direction) {
-      position = 0
-    } else if (direction === 'up') {
-      position = (this.barkeep.getData('position') - 1 + gameOptions.bars) % gameOptions.bars
-    } else if (direction === 'down') {
-      position = (this.barkeep.getData('position') + 1) % gameOptions.bars
-    }
-
-    this.barkeep.setData('position', position)
-    this.barkeep.setPosition(gameOptions.width * 0.9, this.bars[position].getRightCenter().y)
-  }
-
   keydown (event: KeyboardEvent) {
     if (event.key === 'ArrowUp') {
-      this.moveBall('up')
+      this.barkeep.moveBall('up')
     } else if (event.key === 'ArrowDown') {
-      this.moveBall('down')
+      this.barkeep.moveBall('down')
     }
   }
 
@@ -107,6 +90,35 @@ class Bar extends Phaser.Scene {
     // if (this.barkeep.y < 0 || this.barkeep.y > gameOptions.height) {
     //   this.scene.start('PlayGame')
     // }
+  }
+}
+
+class Barkeep extends Phaser.Physics.Matter.Image {
+  positions: number[]
+  position: number
+
+  constructor (scene: Phaser.Scene, positions: number[]) {
+    super(scene.matter.world, gameOptions.width / 4, gameOptions.height / 2, 'ball')
+    this.positions = positions
+
+    this.setBody({ type: 'circle' })
+    this.setVelocity(0, 0)
+
+    this.moveBall()
+  }
+
+  moveBall(direction?: 'up' | 'down') {
+    let position: number
+    if (!direction) {
+      position = 0
+    } else if (direction === 'up') {
+      position = (this.position - 1 + gameOptions.bars) % gameOptions.bars
+    } else if (direction === 'down') {
+      position = (this.position + 1) % gameOptions.bars
+    }
+
+    this.position = position
+    this.setPosition(gameOptions.width * 0.9, this.positions[position])
   }
 }
 
