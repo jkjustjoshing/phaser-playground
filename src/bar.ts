@@ -21,6 +21,8 @@ const gameOptions = {
   jumpForce: 10
 }
 
+console.log('https://phaser.io/examples/v3/view/physics/arcade/basic-platform')
+
 class Bar extends Phaser.Scene {
   bars: Phaser.Physics.Arcade.Image[]
   barkeep: Barkeep
@@ -70,9 +72,9 @@ class Bar extends Phaser.Scene {
 
   keydown (event: KeyboardEvent) {
     if (event.key === 'ArrowUp') {
-      this.barkeep.moveBall('up')
+      this.barkeep.move('up')
     } else if (event.key === 'ArrowDown') {
-      this.barkeep.moveBall('down')
+      this.barkeep.move('down')
     }
   }
 
@@ -87,18 +89,30 @@ class Bar extends Phaser.Scene {
 class Barkeep extends Phaser.Physics.Arcade.Image {
   positions: number[]
   position: number
+  beerGroup: Phaser.Physics.Arcade.Group
+  worldEnd: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
 
   constructor (scene: Phaser.Scene, positions: number[]) {
     super(scene, gameOptions.width / 4, gameOptions.height / 2, 'ball')
     this.positions = positions
+    this.beerGroup = this.scene.physics.add.group()
+    this.worldEnd = this.scene.physics.add.image(200, gameOptions.height / 2, 'wall')
+    this.worldEnd.displayHeight = gameOptions.height
+    this.worldEnd.displayWidth = 10
+    this.worldEnd.setActive(true)
+
+    this.scene.physics.add.overlap(this.worldEnd, this.beerGroup, (worldEnd, beer) => {
+      this.lose(beer)
+    });
+
 
     // this.setBody({ type: 'circle' })
     // this.setVelocity(0, 0)
 
-    this.moveBall()
+    this.move()
   }
 
-  moveBall(direction?: 'up' | 'down') {
+  move(direction?: 'up' | 'down') {
     let position: number
     if (!direction) {
       position = 0
@@ -114,8 +128,23 @@ class Barkeep extends Phaser.Physics.Arcade.Image {
 
   addBeer () {
     const beer = new Beer(this.scene, this.positions[this.position])
-    this.scene.add.existing(beer)
+    this.beerGroup.add(beer, true)
+
     setTimeout(() => beer.send())
+  }
+
+  lose (beer: Phaser.Types.Physics.Arcade.GameObjectWithBody) {
+    // beer.destroy()
+    this.beerGroup.children.each(((beer: Beer) => {
+      beer.setVelocity(0, 0)
+    }) as ((beer: Phaser.GameObjects.GameObject) => void))
+    // Remove one life, show "Game Over", or something
+  }
+}
+
+class Boundary extends Phaser.Physics.Arcade.Body {
+  constructor (world: Phaser.Physics.Arcade.World, gameObject: Phaser.GameObjects.GameObject) {
+    super(world, gameObject)
   }
 }
 
@@ -123,11 +152,11 @@ class Beer extends Phaser.Physics.Arcade.Image {
 
   constructor (scene: Phaser.Scene, y: number) {
     super(scene, gameOptions.width * 0.8, y - 70, 'ball')
-    scene.physics.world.enable(this)
+    this.setActive(true)
   }
 
   send () {
-    this.setVelocity(-100, 0)
+    this.setVelocity(-200, 0)
   }
 
 }
@@ -142,7 +171,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   physics: {
     default: 'arcade',
     arcade: {
-
+      debug: true
     }
   }
 }
