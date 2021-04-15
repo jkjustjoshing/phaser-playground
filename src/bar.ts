@@ -6,6 +6,8 @@ import wall from './wall.png'
 import ball from './ball.png'
 import { gameOptions } from './gameOptions'
 import { Barkeep } from './Barkeep'
+import { Patron } from './Patron'
+import { Beer } from './Beer'
 
 document.querySelectorAll('canvas').forEach(canvas => canvas.remove())
 
@@ -21,10 +23,15 @@ const KEYS = {
 }
 
 console.log('https://phaser.io/examples/v3/view/physics/arcade/basic-platform')
+const random = (bars: Phaser.Physics.Arcade.Image[]) => {
+  const randomIndex = Math.floor(Math.random() * bars.length)
+  return bars[randomIndex]
+}
 
 class Bar extends Phaser.Scene {
   bars: Phaser.Physics.Arcade.Image[]
   barkeep: Barkeep
+  patronGroup: Phaser.Physics.Arcade.Group
 
   constructor () {
     super('Bar')
@@ -57,6 +64,18 @@ class Bar extends Phaser.Scene {
     this.input.keyboard.addKey(KEYS.up).onDown = function (e) {
       self.barkeep.move('up')
     }
+
+    this.patronGroup = this.physics.add.group()
+    this.physics.add.overlap(this.barkeep.beerGroup, this.patronGroup, ((beer: Beer, patron: Patron) => {
+      beer.destroy()
+      patron.setDrinking()
+    }) as ArcadePhysicsCallback);
+
+    setTimeout(() => {
+      const patron = new Patron(this, random(this.bars).getRightCenter().y)
+      this.patronGroup.add(patron)
+      patron.send()
+    }, 1000)
   }
 
   addBar(wallNumber) {
