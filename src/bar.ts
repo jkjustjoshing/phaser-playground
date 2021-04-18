@@ -23,10 +23,7 @@ const KEYS = {
 }
 
 console.log('https://phaser.io/examples/v3/view/physics/arcade/basic-platform')
-const random = (bars: Phaser.Physics.Arcade.Image[]) => {
-  const randomIndex = Math.floor(Math.random() * bars.length)
-  return bars[randomIndex]
-}
+const random = (length: number) => Math.floor(Math.random() * length)
 
 class Bar extends Phaser.Scene {
   bars: Phaser.Physics.Arcade.Image[]
@@ -72,10 +69,11 @@ class Bar extends Phaser.Scene {
     }) as ArcadePhysicsCallback);
 
     setTimeout(() => {
-      const patron = new Patron(this, random(this.bars).getRightCenter().y)
-      this.patronGroup.add(patron)
-      patron.send()
+      this.addPatron(random(this.bars.length))
     }, 1000)
+    setTimeout(() => {
+      this.addPatron(random(this.bars.length))
+    }, 1500)
   }
 
   addBar(wallNumber) {
@@ -87,6 +85,12 @@ class Bar extends Phaser.Scene {
     wall.displayHeight = wallHeight
     wall.displayWidth = gameOptions.width * 0.8
     return wall
+  }
+
+  addPatron(row: number) {
+    const patron = new Patron(this, this.bars[row].getRightCenter().y)
+    this.patronGroup.add(patron)
+    patron.send()
   }
 }
 

@@ -1,3 +1,4 @@
+import Phaser from 'phaser'
 import { gameOptions } from './gameOptions'
 
 export class Beer extends Phaser.Physics.Arcade.Image {

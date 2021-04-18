@@ -1,3 +1,4 @@
+import Phaser from 'phaser'
 import { gameOptions } from './gameOptions'
 import { Beer } from './Beer'
 
