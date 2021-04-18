@@ -37,6 +37,7 @@ class Bar extends Phaser.Scene {
   preload () {
     this.load.image('wall', wall)
     this.load.image('ball', ball)
+    this.load.image(...Beer.preload())
   }
 
   create () {
